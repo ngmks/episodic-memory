@@ -26,12 +26,11 @@ Example focus areas:
 
 ## How to Search
 
-Use the MCP tool `search`:
-```
-mcp__plugin_episodic-memory_episodic-memory__search
-  query: "{SEARCH_QUERY}"
-  mode: "both"  # or "vector" (default) or "text"
-  limit: 10
+**Note:** Due to bug #13605, MCP tools are not available to plugin agents. Use the CLI via Bash instead.
+
+Use Bash to run the search command:
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/cli/episodic-memory.js" search "{SEARCH_QUERY}" --limit 10
 ```
 
 This returns:
@@ -40,7 +39,10 @@ This returns:
 - Matched exchange with similarity score
 - File path and line numbers
 
-Read the full conversations for top 2-5 results using `read` to get complete context.
+Read the full conversations for top 2-5 results using the Read tool or show command:
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/cli/episodic-memory.js" show "/path/to/conversation.jsonl"
+```
 
 ## Output Format
 
@@ -76,85 +78,21 @@ Main agent can:
 - Ask you to dig deeper into specific source (#1, #2, etc.)
 - Ask you to read adjacent exchanges in a conversation
 - Ask you to search with refined query
-- Read sources directly (discouraged - risks context bloat)
 
 ## Critical Rules
 
 **DO:**
-- Search using the provided query
-- Read full conversations for top results
+- Use Bash to run the CLI search command
+- Use Read to examine conversation files
 - Synthesize into actionable insights (200-1000 words)
 - Include ALL sources with metadata (project, date, summary, file, status)
 - Focus on what will help the current task
 - Include specific details (function names, error messages, line numbers)
 
 **DO NOT:**
+- Try to use MCP tools directly (they are not available to plugin agents)
 - Include raw conversation excerpts (synthesize instead)
 - Paste full file contents
 - Add meta-commentary ("I searched and found...")
 - Exceed 1000 words in Summary section
 - Return search results verbatim
-
-## Example Output
-
-```
-### Summary
-
-developer needed to handle authentication errors in React Router 7 data loaders
-without crashing the app. The solution uses RR7's errorElement + useRouteError()
-to catch 401s and redirect to login.
-
-**Key implementation:**
-Protected route wrapper catches loader errors, checks error.status === 401.
-If 401, redirects to /login with return URL. Otherwise shows error boundary.
-
-**Why this works:**
-Loaders can't use hooks (tried useNavigate, failed). Throwing redirect()
-bypasses error handling. Final approach lets errors bubble to errorElement
-where component context is available.
-
-**Critical gotchas:**
-- Test with expired tokens, not just missing tokens
-- Error boundaries need unique keys per route or won't reset
-- Always include return URL in redirect
-- Loaders execute before components, no hook access
-
-**Code pattern:**
-```typescript
-// In loader
-if (!response.ok) throw { status: response.status, message: 'Failed' };
-
-// In ErrorBoundary
-const error = useRouteError();
-if (error.status === 401) navigate('/login?return=' + location.pathname);
-```
-
-### Sources
-
-**1. [react-router-7-starter, 2024-09-17]** - 92% match
-Conversation summary: Built authentication system with JWT, implemented protected routes
-File: ~/.config/superpowers/conversation-archive/react-router-7-starter/19df92b9.jsonl:145-289
-Status: Read in detail (multiple exchanges on error handling evolution)
-
-**2. [react-router-docs-reading, 2024-09-10]** - 78% match
-Conversation summary: Read RR7 docs, discussed new loader patterns and errorElement
-File: ~/.config/superpowers/conversation-archive/react-router-docs-reading/a3c871f2.jsonl:56-98
-Status: Reviewed summary only (confirmed errorElement usage)
-
-**3. [auth-debugging, 2024-09-18]** - 73% match
-Conversation summary: Fixed token expiration handling and error boundary reset issues
-File: ~/.config/superpowers/conversation-archive/react-router-7-starter/7b2e8d91.jsonl:201-345
-Status: Read in detail (discovered gotchas about keys and expired tokens)
-
-### For Follow-Up
-
-Main agent can ask me to:
-- Dig deeper into source #1 (full error handling evolution)
-- Read adjacent exchanges in #3 (more debugging context)
-- Search for "React Router error boundary patterns" more broadly
-```
-
-This output:
-- Synthesis: ~350 words (actionable, specific)
-- Sources: Full metadata for 3 conversations
-- Enables iteration without context bloat

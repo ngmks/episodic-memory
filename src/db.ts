@@ -25,14 +25,14 @@ export function migrateSchema(db: Database.Database): void {
   let migrated = false;
   for (const migration of migrations) {
     if (!columnNames.has(migration.name)) {
-      console.log(`Migrating schema: adding ${migration.name} column...`);
+      console.error(`Migrating schema: adding ${migration.name} column...`);
       db.prepare(migration.sql).run();
       migrated = true;
     }
   }
 
   if (migrated) {
-    console.log('Migration complete.');
+    console.error('Migration complete.');
   }
 }
 

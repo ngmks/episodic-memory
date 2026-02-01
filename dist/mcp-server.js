@@ -17807,13 +17807,13 @@ function migrateSchema(db) {
   let migrated = false;
   for (const migration of migrations) {
     if (!columnNames.has(migration.name)) {
-      console.log(`Migrating schema: adding ${migration.name} column...`);
+      console.error(`Migrating schema: adding ${migration.name} column...`);
       db.prepare(migration.sql).run();
       migrated = true;
     }
   }
   if (migrated) {
-    console.log("Migration complete.");
+    console.error("Migration complete.");
   }
 }
 function initDatabase() {
@@ -17896,12 +17896,12 @@ import { pipeline } from "@xenova/transformers";
 var embeddingPipeline = null;
 async function initEmbeddings() {
   if (!embeddingPipeline) {
-    console.log("Loading embedding model (first run may take time)...");
+    console.error("Loading embedding model (first run may take time)...");
     embeddingPipeline = await pipeline(
       "feature-extraction",
       "Xenova/all-MiniLM-L6-v2"
     );
-    console.log("Embedding model loaded");
+    console.error("Embedding model loaded");
   }
 }
 async function generateEmbedding(text) {
