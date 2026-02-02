@@ -1,65 +1,28 @@
 ---
 name: remembering-conversations
-description: Use when user asks 'how should I...' or 'what's the best approach...' after exploring code, OR when you've tried to solve something and are stuck, OR for unfamiliar workflows, OR when user references past work. Searches conversation history.
+description: >
+  Search past Claude Code conversations for context, decisions, and solutions.
+  Triggers: "last time", "before", "we discussed", "dernière conversation",
+  "la dernière fois", "on avait fait", "tu te souviens", "do you remember",
+  "what did we work on", "qu'est-ce qu'on a fait", "notre dernière session",
+  "previous session", "we talked about", "rappelle-toi", "remember when",
+  "past work", "travail précédent", "session précédente", "notre dernier travail",
+  "what was our last task", "quelle était notre dernière tâche".
+  Also use after exploring code when stuck or making architectural decisions.
+argument-hint: [search query or topic]
+context: fork
+agent: episodic-memory:search-conversations
+allowed-tools: Bash
 ---
 
-# Remembering Conversations
+# Search Request
 
-**Core principle:** Search before reinventing. Searching costs nothing; reinventing or repeating mistakes costs everything.
+Search episodic memory for: $ARGUMENTS
 
-## Mandatory: Use the Search Agent
+Focus on:
+- Decisions made and their rationale
+- Solutions that worked (or didn't)
+- Patterns, gotchas, and lessons learned
+- Relevant code approaches
 
-**YOU MUST dispatch the search-conversations agent for any historical search.**
-
-Announce: "Dispatching search agent to find [topic]."
-
-Then use the Task tool with `subagent_type: "search-conversations"`:
-
-```
-Task tool:
-  description: "Search past conversations for [topic]"
-  prompt: "Search for [specific query or topic]. Focus on [what you're looking for - e.g., decisions, patterns, gotchas, code examples]."
-  subagent_type: "search-conversations"
-```
-
-The agent will:
-1. Search with the `search` tool
-2. Read top 2-5 results with the `read` tool
-3. Synthesize findings (200-1000 words)
-4. Return actionable insights + sources
-
-**Saves 50-100x context vs. loading raw conversations.**
-
-## When to Use
-
-You often get value out of consulting your episodic memory once you understand what you're being asked. Search memory in these situations:
-
-**After understanding the task:**
-- User asks "how should I..." or "what's the best approach..."
-- You've explored current codebase and need to make architectural decisions
-- User asks for implementation approach after describing what they want
-
-**When you're stuck:**
-- You've investigated a problem and can't find the solution
-- Facing a complex problem without obvious solution in current code
-- Need to follow an unfamiliar workflow or process
-
-**When historical signals are present:**
-- User says "last time", "before", "we discussed", "you implemented"
-- User asks "why did we...", "what was the reason..."
-- User says "do you remember...", "what do we know about..."
-
-**Don't search first:**
-- For current codebase structure (use Grep/Read to explore first)
-- For info in current conversation
-- Before understanding what you're being asked to do
-
-## Direct Tool Access (Discouraged)
-
-You CAN use MCP tools directly, but DON'T:
-- `mcp__plugin_episodic-memory_episodic-memory__search`
-- `mcp__plugin_episodic-memory_episodic-memory__read`
-
-Using these directly wastes your context window. Always dispatch the agent instead.
-
-See MCP-TOOLS.md for complete API reference if needed for advanced usage.
+Return a synthesis (200-1000 words) with source references.
